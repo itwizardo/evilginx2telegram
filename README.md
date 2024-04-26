@@ -96,6 +96,7 @@ config webhook_telegram 7192062302:AAGvU9P57FF37gz-ZRUuonESXwvStiQV58O/156045406
 ```
 
 Replace `7192062302:AAGvU9P57FF37gz-ZRUuonESXwvStiQV58O` with your Telegram token.
+
 Replace `15604540690` with your Chat id.
 
 ## Telegram Guide
