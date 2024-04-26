@@ -478,6 +478,16 @@ func (c *Config) SetBlacklistMode(mode string) {
 	log.Info("blacklist mode set to: %s", mode)
 }
 
+func (c *Config) SetWebhookTelegram(webhook string) {
+	c.general.WebhookTelegram = webhook
+	c.cfg.Set(CFG_GENERAL, c.general)
+	log.Info("telegram webhook set to: %s", webhook)
+	err := c.cfg.WriteConfig()
+	if err != nil {
+		log.Error("write config: %v", err)
+	}
+}
+
 func (c *Config) SetUnauthUrl(_url string) {
 	c.general.UnauthUrl = _url
 	c.cfg.Set(CFG_GENERAL, c.general)
