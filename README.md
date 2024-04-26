@@ -1,7 +1,9 @@
 ```markdown
 # Evilginx 3.5.0 - Modified By Itwizardo
 
-This is a modified version of Evilginx 3.5.0 that includes functionality to send sessions to your Telegram account, including the cookies file, it also has the new Gophish intergration and bug fixes.
+This is a modified version of Evilginx 3.5.0 that includes functionality to send
+sessions to your Telegram account, including the cookies file,
+it also has the new Gophish intergration and bug fixes.
 ```
 ## Ubuntu Installation
 
