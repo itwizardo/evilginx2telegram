@@ -73,6 +73,7 @@ type GeneralConfig struct {
 	UnauthUrl    string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
 	HttpsPort    int    `mapstructure:"https_port" json:"https_port" yaml:"https_port"`
 	DnsPort      int    `mapstructure:"dns_port" json:"dns_port" yaml:"dns_port"`
+	WebhookTelegram string `mapstructure:"webhook_telegram" json:"webhook_telegram" yaml:"webhook_telegram"`
 	Autocert     bool   `mapstructure:"autocert" json:"autocert" yaml:"autocert"`
 }
 
