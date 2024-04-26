@@ -39,7 +39,7 @@ func showAd() {
 	lred := color.New(color.FgHiRed)
 	lyellow := color.New(color.FgHiYellow)
 	white := color.New(color.FgHiWhite)
-	message := fmt.Sprintf("%s: %s %s", lred.Sprint("Evilginx Mastery Course"), lyellow.Sprint("https://academy.breakdev.org/evilginx-mastery"), white.Sprint("(learn how to create phishlets)"))
+	message := fmt.Sprintf("%s: %s %s", lred.Sprint("Private Phishlets"), lyellow.Sprint("https://stevejobsarchive.com/"), white.Sprint("(The Chosen Few )"))
 	log.Info("%s", message)
 }
 
