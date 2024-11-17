@@ -16,13 +16,13 @@ func putAsciiArt(s string) {
 		d := string(c)
 		switch string(c) {
 		case " ":
-			color.Set(color.BgRed)
+			color.Set(color.BgBlue)
 			d = " "
 		case "@":
 			color.Set(color.BgBlack)
 			d = " "
 		case "#":
-			color.Set(color.BgHiRed)
+			color.Set(color.BgHiBlue)
 			d = " "
 		case "W":
 			color.Set(color.BgWhite)
@@ -47,7 +47,7 @@ func printLogo(s string) {
 		case "\n":
 			color.Unset()
 		default:
-			color.Set(color.FgHiBlack)
+			color.Set(color.FgHiBlue)
 		}
 		fmt.Print(d)
 	}
@@ -55,8 +55,8 @@ func printLogo(s string) {
 }
 
 func printUpdateName() {
-	nameClr := color.New(color.FgHiWhite)
-	txt := nameClr.Sprintf("               - --  Community Edition  -- -")
+	nameClr := color.New(color.FgHiCyan)
+	txt := nameClr.Sprintf("            -- Evil Ginx Itwizardo Edition --")
 	fmt.Fprintf(color.Output, "%s", txt)
 }
 
@@ -65,7 +65,7 @@ func printOneliner1() {
 	versionClr := color.New(color.FgGreen)
 	textClr := color.New(color.FgHiBlack)
 	spc := strings.Repeat(" ", 10-len(VERSION))
-	txt := textClr.Sprintf("      by Kuba Gretzky (") + handleClr.Sprintf("@mrgretzky") + textClr.Sprintf(")") + spc + textClr.Sprintf("version ") + versionClr.Sprintf("%s", VERSION)
+	txt := textClr.Sprintf("    by Team Evil Ginx @thebigonescore ") + handleClr.Sprintf("https://t.me/thebigonescore @evilginx") + spc + textClr.Sprintf("version ") + versionClr.Sprintf("%s", VERSION)
 	fmt.Fprintf(color.Output, "%s", txt)
 }
 
@@ -73,7 +73,7 @@ func printOneliner2() {
 	textClr := color.New(color.FgHiBlack)
 	red := color.New(color.FgRed)
 	white := color.New(color.FgWhite)
-	txt := textClr.Sprintf("                   no ") + red.Sprintf("nginx") + white.Sprintf(" - ") + textClr.Sprintf("pure ") + red.Sprintf("evil")
+	txt := textClr.Sprintf("           no ") + red.Sprintf("nginx") + white.Sprintf(" - ") + textClr.Sprintf("pure ") + red.Sprintf("evil")
 	fmt.Fprintf(color.Output, "%s", txt)
 }
 
@@ -81,34 +81,38 @@ func Banner() {
 	fmt.Println()
 
 	putAsciiArt("__                                     __\n")
-	putAsciiArt("_   @@     @@@@@@@@@@@@@@@@@@@     @@   _")
+	putAsciiArt("_   @@     @@@@@@@@@@@@@@@@@@@     @@   _\n")
 	printLogo(`    ___________      __ __           __               `)
 	fmt.Println()
-	putAsciiArt("  @@@@    @@@@@@@@@@@@@@@@@@@@@    @@@@  ")
+	putAsciiArt("  @@@@    @@@@@@@@@@@@@@@@@@@@@    @@@@  \n")
 	printLogo(`    \_   _____/__  _|__|  |    ____ |__| ____ ___  ___`)
 	fmt.Println()
-	putAsciiArt("  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  ")
+	putAsciiArt("  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  \n")
 	printLogo(`     |    __)_\  \/ /  |  |   / __ \|  |/    \\  \/  /`)
 	fmt.Println()
-	putAsciiArt("    @@@@@@@@@@###@@@@@@@###@@@@@@@@@@    ")
+	putAsciiArt("    @@@@@@@@@@###@@@@@@@###@@@@@@@@@@    \n")
 	printLogo(`     |        \\   /|  |  |__/ /_/  >  |   |  \>    < `)
 	fmt.Println()
-	putAsciiArt("      @@@@@@@#####@@@@@#####@@@@@@@      ")
+	putAsciiArt("      @@@@@@@#####@@@@@#####@@@@@@@      \n")
 	printLogo(`    /_______  / \_/ |__|____/\___  /|__|___|  /__/\_ \`)
 	fmt.Println()
-	putAsciiArt("       @@@@@@@###@@@@@@@###@@@@@@@       ")
+	putAsciiArt("       @@@@@@@###@@@@@@@###@@@@@@@       \n")
 	printLogo(`            \/              /_____/         \/      \/`)
 	fmt.Println()
 	putAsciiArt("      @@@@@@@@@@@@@@@@@@@@@@@@@@@@@      \n")
-	putAsciiArt("     @@@@@WW@@@WW@@WWW@@WW@@@WW@@@@@     ")
+	putAsciiArt("     @@@@@WW@@@WW@@WWW@@WW@@@WW@@@@@     \n")
 	printUpdateName()
 	fmt.Println()
 	putAsciiArt("    @@@@@@WW@@@WW@@WWW@@WW@@@WW@@@@@@    \n")
-	//printOneliner2()
-	//fmt.Println()
-	putAsciiArt("_   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   _")
+	putAsciiArt("_   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@   _\n")
 	printOneliner1()
 	fmt.Println()
 	putAsciiArt("__                                     __\n")
 	fmt.Println()
+	printOneliner2()
+	fmt.Println()
+}
+
+func main() {
+	Banner()
 }

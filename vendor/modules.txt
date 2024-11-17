@@ -240,4 +240,3 @@ gopkg.in/square/go-jose.v2/json
 ## explicit; go 1.15
 gopkg.in/yaml.v2
 # github.com/elazarl/goproxy => github.com/kgretzky/goproxy v0.0.0-20220622134552-7d0e0c658440
-

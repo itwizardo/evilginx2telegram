@@ -18,6 +18,8 @@ Also check out [SJSON](https://github.com/tidwall/sjson) for modifying json, and
 
 This README is a quick overview of how to use GJSON, for more information check out [GJSON Syntax](SYNTAX.md).
 
+GJSON is also available for [Python](https://github.com/volans-/gjson-py) and [Rust](https://github.com/tidwall/gjson.rs)
+
 Getting Started
 ===============
 
@@ -174,7 +176,7 @@ The `result.Int()` and `result.Uint()` calls are capable of reading all 64 bits,
 
 ```go
 result.Int() int64    // -9223372036854775808 to 9223372036854775807
-result.Uint() int64   // 0 to 18446744073709551615
+result.Uint() uint64   // 0 to 18446744073709551615
 ```
 
 ## Modifiers and path chaining 
@@ -209,6 +211,7 @@ There are currently the following built-in modifiers:
 - `@tostr`: Converts json to a string. Wraps a json string.
 - `@fromstr`: Converts a string from json. Unwraps a json string.
 - `@group`: Groups arrays of objects. See [e4fc67c](https://github.com/tidwall/gjson/commit/e4fc67c92aeebf2089fabc7872f010e340d105db).
+- `@dig`: Search for a value without providing its entire path. See [e8e87f2](https://github.com/tidwall/gjson/commit/e8e87f2a00dc41f3aba5631094e21f59a8cf8cbf).
 
 ### Modifier arguments
 
@@ -423,16 +426,6 @@ if result.Index > 0 {
 ```
 
 This is a best-effort no allocation sub slice of the original json. This method utilizes the `result.Index` field, which is the position of the raw data in the original json. It's possible that the value of `result.Index` equals zero, in which case the `result.Raw` is converted to a `[]byte`.
-
-## Get multiple values at once
-
-The `GetMany` function can be used to get multiple values at the same time.
-
-```go
-results := gjson.GetMany(json, "name.first", "name.last", "age")
-```
-
-The return value is a `[]Result`, which will always contain exactly the same number of items as the input paths.
 
 ## Performance
 

